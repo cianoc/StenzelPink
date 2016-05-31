@@ -53,13 +53,18 @@ public:
 
     pink()                                      // constructor
     {
-        plfsr  = 0x5EED41F5 + instance_cnt++;   // seed for lfsr, decorrelate multiple instances
+        plfsr  = 0;                             // seed for lfsr, decorrelate multiple instances
 //        *((float *)(&paccu))  = PINK_BIAS;      // init float hack
         paccu.f = PINK_BIAS;
         pncnt = 0;                              // counter from zero
         pinc   = 0x04CCCC;                      // balance initial states to avoid DC
         pdec   = 0x04CCCC;
     };
+
+    void seed(int val)
+    {
+        plfsr = val;
+    }
 
 private:
     static const unsigned int pnmask[256];      // lookup for bitreversed masks

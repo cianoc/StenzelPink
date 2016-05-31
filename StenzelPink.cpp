@@ -25,6 +25,10 @@ static InterfaceTable *ft;
 struct StenzelPink : public SCUnit {
 public:
     StenzelPink() {
+        // Not sure if this is the best way to seed the LFSR.
+        RGen& rgen = *mParent->mRGen;
+        mPink.seed(rgen.trand());
+
         if (mBufLength & 15 == 0) {
             set_calc_function<StenzelPink, &StenzelPink::next16>();
         } else {
