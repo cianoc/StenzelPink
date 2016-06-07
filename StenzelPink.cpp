@@ -66,7 +66,33 @@ private:
     }
 };
 
+
+struct StenzelPink2 : public SCUnit {
+public:
+    StenzelPink2() {
+        // Not sure if this is the best way to seed the LFSR.
+        RGen& rgen = *mParent->mRGen;
+        mPink.seed(rgen.trand());
+
+        if (mBufLength == 64) {
+            set_calc_function<StenzelPink2, &StenzelPink2::next64>();
+        }
+    }
+
+private:
+    pink mPink;
+
+    void next64(int inNumSamples) {
+        #define WRITE_PINK(offset) mPink.generate16(out(0) + offset);
+        WRITE_PINK(0x00);
+        WRITE_PINK(0x10);
+        WRITE_PINK(0x20);
+        WRITE_PINK(0x30);
+    }
+};
+
 PluginLoad(StenzelPinkUGens) {
     ft = inTable;
     registerUnit<StenzelPink>(ft, "StenzelPink");
+    registerUnit<StenzelPink2>(ft, "StenzelPink2");
 }
