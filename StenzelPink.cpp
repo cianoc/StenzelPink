@@ -29,7 +29,8 @@ public:
         RGen& rgen = *mParent->mRGen;
         mPink.seed(rgen.trand());
 
-        if (mBufLength & 15 == 0) {
+        m16 = (mBufLength & 15) == 0;
+        if (m16) {
             set_calc_function<StenzelPink, &StenzelPink::next16>();
         } else {
             mBuf = (float*)RTAlloc(mWorld, 16 * sizeof(float));
@@ -39,28 +40,33 @@ public:
     }
 
     ~StenzelPink() {
-        RTFree(mWorld, mBuf);
+        if (!m16) {
+            RTFree(mWorld, mBuf);
+        }
     }
 
 private:
+    bool m16;
     pink mPink;
     float* mBuf;
     int mPhase;
 
     // If the buffer size is a multiple of 16, we can just split the buffer size into 16-sample chunks
     void next16(int inNumSamples) {
+        float* out_ = out(0);
         for (int i = 0; i < inNumSamples; i += 16) {
-            mPink.generate16(out(0) + i);
+            mPink.generate16(out_ + i);
         }
     }
 
     // Otherwise, gotta write to a danged size-16 buffer, track phase and all that
     void next(int inNumSamples) {
+        float* out_ = out(0);
         for (int i = 0; i < inNumSamples; i += 1) {
             if (mPhase == 0) {
                 mPink.generate16(mBuf);
             }
-            out(0)[i] = mBuf[mPhase];
+            out_[i] = mBuf[mPhase];
             mPhase = (mPhase + 1) & 15;
         }
     }
