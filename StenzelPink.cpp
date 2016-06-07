@@ -29,24 +29,25 @@ public:
         RGen& rgen = *mParent->mRGen;
         mPink.seed(rgen.trand());
 
-        m16 = (mBufLength & 15) == 0;
-        if (m16) {
+        mUsingBuf = 0;
+        if ((mBufLength & 15) == 0) {
             set_calc_function<StenzelPink, &StenzelPink::next16>();
         } else {
+            mUsingBuf = 1;
             mBuf = (float*)RTAlloc(mWorld, 16 * sizeof(float));
-            mPhase = 0;
+            mPhase = 16;
             set_calc_function<StenzelPink, &StenzelPink::next>();
         }
     }
 
     ~StenzelPink() {
-        if (!m16) {
+        if (mUsingBuf) {
             RTFree(mWorld, mBuf);
         }
     }
 
 private:
-    bool m16;
+    bool mUsingBuf;
     pink mPink;
     float* mBuf;
     int mPhase;
@@ -63,11 +64,12 @@ private:
     void next(int inNumSamples) {
         float* out_ = out(0);
         for (int i = 0; i < inNumSamples; i += 1) {
-            if (mPhase == 0) {
+            if (mPhase == 16) {
                 mPink.generate16(mBuf);
+                mPhase = 0;
             }
             out_[i] = mBuf[mPhase];
-            mPhase = (mPhase + 1) & 15;
+            mPhase++;
         }
     }
 };
